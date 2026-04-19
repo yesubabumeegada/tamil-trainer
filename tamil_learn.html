@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tamil Trainer">
+<meta name="theme-color" content="#085041">
+<title>Tamil Daily Trainer</title>
+<style>
+  :root {
+    --green: #085041;
+    --green-light: #E1F5EE;
+    --green-mid: #1D9E75;
+    --green-text: #9FE1CB;
+    --coral: #FAECE7;
+    --coral-border: #F5C4B3;
+    --coral-text: #4A1B0C;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --success-bg: #E1F5EE;
+    --success-border: #9FE1CB;
+    --success-text: #085041;
+    --bg: #ffffff;
+    --bg2: #f6f5f2;
+    --bg3: #eeece8;
+    --text: #1a1a18;
+    --text2: #6b6a65;
+    --text3: #9e9c96;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --bg2: #242420;
+      --bg3: #2e2e2a;
+      --text: #f0ede6;
+      --text2: #a09d96;
+      --text3: #6b6a65;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --green-light: #04342C;
+      --green-text: #5DCAA5;
+      --coral: #4A1B0C;
+      --coral-border: #993C1D;
+      --coral-text: #F0997B;
+      --amber-bg: #412402;
+      --amber-text: #FAC775;
+      --blue-bg: #042C53;
+      --blue-text: #85B7EB;
+      --success-bg: #04342C;
+      --success-border: #0F6E56;
+      --success-text: #9FE1CB;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .app { max-width: 680px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* Header */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 12px; border-bottom: 0.5px solid var(--border); margin-bottom: 16px; }
+  .header-title { display: flex; align-items: center; gap: 10px; }
+  .header-title h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+  .header-title p { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .streak-pill { background: var(--amber-bg); color: var(--amber-text); font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat { background: var(--bg2); border-radius: var(--radius); padding: 10px 8px; text-align: center; }
+  .stat-val { font-size: 20px; font-weight: 600; color: var(--text); }
+  .stat-label { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+  /* API Key */
+  .api-section { background: var(--blue-bg); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 16px; border: 0.5px solid var(--border); }
+  .api-section h3 { font-size: 13px; font-weight: 600; color: var(--blue-text); margin-bottom: 6px; }
+  .api-section p { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
+  .api-row { display: flex; gap: 8px; }
+  .api-input { flex: 1; padding: 9px 12px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); font-size: 13px; font-family: monospace; }
+  .api-input::placeholder { color: var(--text3); font-family: inherit; }
+  .api-save-btn { padding: 9px 16px; border-radius: var(--radius); border: none; background: var(--green); color: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .api-saved { font-size: 11px; color: var(--success-text); margin-top: 6px; display: none; }
+  .api-saved.show { display: block; }
+
+  /* Topics */
+  .topics-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none; }
+  .topics-scroll::-webkit-scrollbar { display: none; }
+  .topic-btn { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; font-size: 13px; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+  .topic-btn.active { background: var(--green); color: var(--green-text); border-color: var(--green); }
+  .topic-count { font-size: 10px; opacity: 0.7; }
+
+  /* Search */
+  .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .search-input { flex: 1; padding: 10px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 14px; }
+  .search-input:focus { outline: none; border-color: var(--green-mid); }
+  .search-input::placeholder { color: var(--text3); }
+  .jump-input { width: 64px; padding: 10px 8px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 14px; text-align: center; }
+  .jump-input:focus { outline: none; border-color: var(--green-mid); }
+
+  /* Mode */
+  .mode-row { display: flex; gap: 6px; margin-bottom: 14px; }
+  .mode-btn { padding: 6px 14px; border-radius: 16px; font-size: 12px; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .mode-btn.active { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-text); }
+
+  /* Main Card */
+  .main-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .phrase-loc { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .diff-badge { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 600; }
+  .diff-0 { background: #EAF3DE; color: #27500A; }
+  .diff-1 { background: var(--amber-bg); color: var(--amber-text); }
+  .diff-2 { background: var(--coral); color: var(--coral-text); }
+  .prog-wrap { height: 3px; background: var(--bg3); border-radius: 2px; margin-bottom: 18px; }
+  .prog-fill { height: 3px; background: var(--green-mid); border-radius: 2px; transition: width 0.4s ease; }
+  .tamil-text { font-size: 32px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 8px; }
+  .roman-text { font-size: 18px; color: var(--green-mid); font-style: italic; margin-bottom: 5px; font-weight: 500; }
+  .meaning-text { font-size: 15px; color: var(--text); margin-bottom: 4px; }
+  .context-text { font-size: 12px; color: var(--text3); font-style: italic; margin-bottom: 14px; }
+  .syl-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .syl-chip { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--text2); }
+  .syl-strip.hidden { display: none; }
+
+  /* Action Buttons */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn-action { display: flex; align-items: center; gap: 5px; padding: 9px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .btn-action:hover { background: var(--bg2); }
+  .btn-action:active { transform: scale(0.97); }
+  .btn-action svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .btn-mic { margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: var(--radius); border: none; background: var(--green); color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-mic:hover { background: var(--green-mid); }
+  .btn-mic:active { transform: scale(0.97); }
+  .btn-mic.listening { background: #D85A30; animation: micpulse 1s infinite; }
+  .btn-mic svg { width: 18px; height: 18px; }
+  @keyframes micpulse { 0%,100%{opacity:1} 50%{opacity:0.65} }
+
+  /* Feedback */
+  .feedback { margin-top: 14px; padding: 13px 16px; border-radius: var(--radius); font-size: 14px; line-height: 1.65; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--success-bg); color: var(--success-text); border: 0.5px solid var(--success-border); }
+  .feedback.bad { background: var(--coral); color: var(--coral-text); border: 0.5px solid var(--coral-border); }
+  .feedback.loading { background: var(--bg2); color: var(--text2); border: 0.5px solid var(--border); }
+  .heard-row { margin-top: 6px; font-size: 12px; color: var(--text3); }
+  .mastered-box { margin-top: 8px; padding: 10px 14px; background: var(--amber-bg); color: var(--amber-text); border-radius: var(--radius); font-size: 13px; display: none; }
+  .mastered-box.show { display: block; }
+  .warn-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--text2); margin-top: 10px; display: none; line-height: 1.5; }
+  .warn-box.show { display: block; }
+
+  /* Nav */
+  .nav-row { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .btn-nav { padding: 9px 18px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+  .btn-nav:hover { background: var(--bg2); }
+  .btn-next { background: var(--bg2); color: var(--text); display: none; }
+  .btn-next.show { display: block; }
+  .dots { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; max-width: 260px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); border: 0.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: all 0.2s; }
+  .dot.done { background: var(--green-mid); border-color: var(--green-mid); }
+  .dot.curr { background: var(--green); border-color: var(--green); width: 12px; border-radius: 3px; }
+
+  /* No-API fallback */
+  .no-api-msg { background: var(--bg2); border-radius: var(--radius); padding: 12px 15px; font-size: 13px; color: var(--text2); margin-top: 10px; line-height: 1.6; display: none; }
+  .no-api-msg.show { display: block; }
+
+  /* Install banner */
+  .install-banner { background: var(--green); color: white; border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 16px; display: none; align-items: center; justify-content: space-between; gap: 12px; }
+  .install-banner.show { display: flex; }
+  .install-banner p { font-size: 13px; line-height: 1.5; }
+  .install-banner button { flex-shrink: 0; padding: 8px 14px; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.5); background: transparent; color: white; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+  @media (max-width: 480px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .tamil-text { font-size: 26px; }
+    .actions { gap: 6px; }
+    .btn-action { padding: 8px 10px; font-size: 12px; }
+    .btn-mic { padding: 10px 18px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-title">
+      <div>
+        <h1>🌿 Tamil Daily</h1>
+        <p>600+ phrases · AI pronunciation coach</p>
+      </div>
+    </div>
+    <div class="streak-pill">
+      🔥 <span id="streak-val">0</span> day streak
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val" id="s-correct">0</div><div class="stat-label">Correct</div></div>
+    <div class="stat"><div class="stat-val" id="s-total">0</div><div class="stat-label">Practiced</div></div>
+    <div class="stat"><div class="stat-val" id="s-accuracy">—</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat"><div class="stat-val" id="s-mastered">0</div><div class="stat-label">Mastered</div></div>
+  </div>
+
+  <div class="api-section" id="api-section">
+    <h3>🔑 Anthropic API Key (for AI feedback)</h3>
+    <p>Enter your free API key from <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue-text)">console.anthropic.com</a> to get smart pronunciation feedback. Without it, the app still works — you'll self-evaluate.</p>
+    <div class="api-row">
+      <input type="password" class="api-input" id="api-key-input" placeholder="sk-ant-api03-...">
+      <button class="api-save-btn" onclick="saveApiKey()">Save</button>
+    </div>
+    <div class="api-saved" id="api-saved">✅ API key saved locally on this device</div>
+  </div>
+
+  <div class="install-banner" id="install-banner">
+    <p><strong>Add to Home Screen</strong> — use Tamil Daily like an app, works offline!</p>
+    <button onclick="installApp()">Install</button>
+  </div>
+
+  <div class="topics-scroll" id="topic-tabs"></div>
+
+  <div class="search-row">
+    <input type="text" class="search-input" id="search-input" placeholder="Search phrases, meanings..." oninput="handleSearch()">
+    <input type="number" class="jump-input" id="jump-input" placeholder="#" title="Jump to phrase number" onchange="jumpTo(this.value)">
+  </div>
+
+  <div class="mode-row">
+    <button class="mode-btn active" id="mode-learn" onclick="setMode('learn')">Learn</button>
+    <button class="mode-btn" id="mode-practice" onclick="setMode('practice')">Practice</button>
+    <button class="mode-btn" id="mode-quiz" onclick="setMode('quiz')">Quiz</button>
+  </div>
+
+  <div class="main-card">
+    <div class="card-meta">
+      <div class="phrase-loc" id="phrase-loc">Loading...</div>
+      <div class="diff-badge diff-0" id="diff-badge">Beginner</div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="tamil-text" id="tamil-text"></div>
+    <div class="roman-text" id="roman-text"></div>
+    <div class="meaning-text" id="meaning-text"></div>
+    <div class="context-text" id="context-text"></div>
+    <div class="syl-strip hidden" id="syl-strip"></div>
+    <div class="actions">
+      <button class="btn-action" onclick="doListen(false)" title="Listen at normal speed">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3v14M6.5 5.5v9M13.5 5.5v9M3 8v4M17 8v4"/></svg>Listen
+      </button>
+      <button class="btn-action" onclick="doListen(true)" title="Listen slowly">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5"/></svg>Slow
+      </button>
+      <button class="btn-action" id="btn-hint" onclick="toggleHint()" title="Show syllable breakdown">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2a6 6 0 0 1 2 11.66V15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.34A6 6 0 0 1 10 2z"/><path d="M8 18h4"/></svg>Hint
+      </button>
+      <button class="btn-mic" id="btn-mic" onclick="toggleMic()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-5 9a5 5 0 0 0 10 0 .75.75 0 0 0-1.5 0 3.5 3.5 0 0 1-7 0 .75.75 0 0 0-1.5 0zm4.25 5.25a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 0 1.5H10a.75.75 0 0 1-.75-.75zm-3 0a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 0 1.5H7a.75.75 0 0 1-.75-.75z"/></svg>
+        <span id="mic-label">Speak</span>
+      </button>
+    </div>
+    <div class="warn-box" id="warn-box"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="heard-row" id="heard-row"></div>
+    <div class="mastered-box" id="mastered-box">🏆 Mastered! You've nailed this phrase 3 times!</div>
+    <div class="no-api-msg" id="no-api-msg">
+      <strong>No API key set.</strong> Add your Anthropic API key above for AI feedback.<br>
+      For now, self-evaluate: did you say the phrase correctly? Then click Next →
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-nav" onclick="goPrev()">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn-nav btn-next" id="btn-next" onclick="goNext()">Next →</button>
+  </div>
+
+</div>
+
+<script>
+const PHRASES = {
+"Greetings":[
+{t:"வணக்கம்",r:"Vanakkam",s:"Va·nak·kam",m:"Hello / Greetings",ctx:"Universal greeting any time of day",d:0},
+{t:"காலை வணக்கம்",r:"Kaalai vanakkam",s:"Kaa·lai·va·nak·kam",m:"Good morning",ctx:"Morning greeting",d:0},
+{t:"மாலை வணக்கம்",r:"Maalai vanakkam",s:"Maa·lai·va·nak·kam",m:"Good evening",ctx:"Evening greeting",d:0},
+{t:"இரவு வணக்கம்",r:"Iravu vanakkam",s:"I·ra·vu·va·nak·kam",m:"Good night",ctx:"Night greeting",d:0},
+{t:"எப்படி இருக்கீங்க?",r:"Eppadi irukkeenga?",s:"Ep·pa·di·i·ruk·keen·ga",m:"How are you? (formal)",ctx:"Ask someone older or a stranger",d:0},
+{t:"எப்படி இருக்க?",r:"Eppadi irukka?",s:"Ep·pa·di·i·ruk·ka",m:"How are you? (informal)",ctx:"Ask a friend",d:0},
+{t:"நலமாக இருக்கேன்",r:"Nalamaga irukken",s:"Na·la·ma·ga·i·ruk·ken",m:"I am fine",ctx:"Response to how are you",d:0},
+{t:"நான் நல்லா இருக்கேன்",r:"Naan nalla irukken",s:"Naan·nal·la·i·ruk·ken",m:"I am doing well",ctx:"Casual response",d:0},
+{t:"உங்க பேரு என்ன?",r:"Unga paeru enna?",s:"Un·ga·pae·ru·en·na",m:"What is your name? (formal)",ctx:"Formal name question",d:0},
+{t:"உன் பேரு என்ன?",r:"Un paeru enna?",s:"Un·pae·ru·en·na",m:"What is your name? (informal)",ctx:"Ask a peer or child",d:0},
+{t:"என் பேரு ...",r:"En paeru ...",s:"En·pae·ru",m:"My name is ...",ctx:"Introduce yourself",d:0},
+{t:"சந்தோஷமா சந்திச்சோம்",r:"Santhoshamaa santhichchom",s:"San·tho·sha·maa·san·thich·chom",m:"Nice to meet you",ctx:"First meeting",d:1},
+{t:"நீங்க எங்கிருந்து வீங்க?",r:"Neenga engirundhu veenga?",s:"Neen·ga·en·gi·run·dhu·veen·ga",m:"Where are you from?",ctx:"Ask about origin",d:1},
+{t:"நான் மலேசியாவிலிருந்து வாறேன்",r:"Naan Malaysiavilirundhu vaaren",s:"Naan·Ma·lay·si·yaa·vi·li·run·dhu·vaa·ren",m:"I am from Malaysia",ctx:"State origin",d:1},
+{t:"உங்களுக்கு தமிழ் தெரியுமா?",r:"Ungalukku Tamil theriyumaa?",s:"Un·ga·luk·ku·Ta·mil·the·ri·yu·maa",m:"Do you know Tamil?",ctx:"Ask about language ability",d:1},
+{t:"கொஞ்சம் கொஞ்சம் தெரியும்",r:"Konjam konjam theriyum",s:"Kon·jam·kon·jam·the·ri·yum",m:"I know a little bit",ctx:"Modest language answer",d:1},
+{t:"நான் தமிழ் கத்துக்கிறேன்",r:"Naan Tamil kaththukkiren",s:"Naan·Ta·mil·kat·thuk·ki·ren",m:"I am learning Tamil",ctx:"Explain you are a learner",d:1},
+{t:"பார்க்கலாம்",r:"Parkkalaam",s:"Park·ka·laam",m:"See you / Let's see",ctx:"Casual goodbye",d:0},
+{t:"பிறகு பேசலாம்",r:"Piragu pesalaam",s:"Pi·ra·gu·pe·sa·laam",m:"Let's talk later",ctx:"Ending a conversation",d:1},
+{t:"வாங்க, உட்காருங்க",r:"Vaanga, uttkarunga",s:"Vaan·ga·utt·ka·run·ga",m:"Come, please sit down",ctx:"Welcome a guest",d:1},
+{t:"நலமா?",r:"Nalamaa?",s:"Na·la·maa",m:"Are you well?",ctx:"Quick check-in",d:0},
+{t:"சும்மா இருக்கேன்",r:"Summa irukken",s:"Sum·ma·i·ruk·ken",m:"Just okay / Nothing special",ctx:"Neutral response",d:1},
+{t:"உங்க குடும்பம் எப்படி?",r:"Unga kudumbam eppadi?",s:"Un·ga·ku·dum·bam·ep·pa·di",m:"How is your family?",ctx:"Ask about family",d:1},
+{t:"போய் வாங்க",r:"Poi vaanga",s:"Poi·vaan·ga",m:"Goodbye (respectful farewell)",ctx:"Farewell to someone leaving",d:0},
+{t:"வாங்க",r:"Vaanga",s:"Vaan·ga",m:"Come (respectful invitation)",ctx:"Invite someone to join",d:0},
+],
+"Politeness":[
+{t:"நன்றி",r:"Nandri",s:"Nan·dri",m:"Thank you",ctx:"Formal thank you",d:0},
+{t:"மிக்க நன்றி",r:"Mikka nandri",s:"Mik·ka·nan·dri",m:"Thank you very much",ctx:"Deep gratitude",d:0},
+{t:"ரொம்ப நன்றி",r:"Romba nandri",s:"Rom·ba·nan·dri",m:"Thanks a lot",ctx:"Informal gratitude",d:0},
+{t:"பரவாயில்லை",r:"Paravaayillai",s:"Pa·ra·vaa·yil·lai",m:"No problem / You're welcome",ctx:"Response to thanks",d:0},
+{t:"மன்னிக்கவும்",r:"Mannikkavum",s:"Man·nik·ka·vum",m:"Sorry / Excuse me",ctx:"Apologize or get attention",d:0},
+{t:"தயவுசெய்து",r:"Thayavuseydhu",s:"Tha·ya·vu·sey·dhu",m:"Please",ctx:"Add politeness to requests",d:0},
+{t:"சரி",r:"Sari",s:"Sa·ri",m:"Okay / Alright",ctx:"Agree or acknowledge",d:0},
+{t:"ஆமா",r:"Aama",s:"Aa·maa",m:"Yes",ctx:"Affirmative answer",d:0},
+{t:"இல்லை",r:"Illai",s:"Il·lai",m:"No",ctx:"Negative answer",d:0},
+{t:"சரிதான்",r:"Sarithan",s:"Sa·ri·thaan",m:"That's right / Correct",ctx:"Confirm something is right",d:0},
+{t:"கவலைப்படாதீங்க",r:"Kavalaipadaatheenga",s:"Ka·va·lai·pa·daa·theen·ga",m:"Don't worry",ctx:"Reassure someone",d:1},
+{t:"முடியாது",r:"Mudiyaadhu",s:"Mu·di·yaa·dhu",m:"Not possible / Can't do",ctx:"Decline politely",d:1},
+{t:"முடியும்",r:"Mudiyum",s:"Mu·di·yum",m:"It's possible / Can do",ctx:"Confirm ability",d:1},
+{t:"தெரியாது",r:"Theriyaadhu",s:"The·ri·yaa·dhu",m:"I don't know",ctx:"Admit you don't know",d:0},
+{t:"தெரியும்",r:"Theriyum",s:"The·ri·yum",m:"I know",ctx:"Confirm knowledge",d:0},
+{t:"புரியல",r:"Puriyala",s:"Pu·ri·ya·la",m:"I don't understand",ctx:"Say you don't understand",d:0},
+{t:"புரிஞ்சுது",r:"Purinjuthu",s:"Pu·rin·ju·thu",m:"I understand / Got it",ctx:"Confirm understanding",d:0},
+{t:"கொஞ்சம் மெதுவா பேசுங்க",r:"Konjam methuva pesunga",s:"Kon·jam·me·thu·va·pe·sun·ga",m:"Please speak slowly",ctx:"Ask someone to slow down",d:1},
+{t:"மறுபடியும் சொல்லுங்க",r:"Maruppadiyum sollunga",s:"Ma·rup·pa·di·yum·sol·lun·ga",m:"Please say it again",ctx:"Ask for repetition",d:1},
+{t:"உதவி வேணுமா?",r:"Udhavi venumaa?",s:"U·dha·vi·ve·nu·maa",m:"Do you need help?",ctx:"Offer assistance",d:0},
+{t:"உதவி வேணும்",r:"Udhavi venum",s:"U·dha·vi·ve·num",m:"I need help",ctx:"Ask for help",d:0},
+{t:"இல்ல, பரவாயில்லை",r:"Illa, paravaayillai",s:"Il·la·pa·ra·vaa·yil·lai",m:"No, it's fine",ctx:"Reassure someone",d:1},
+{t:"நன்னா இரு",r:"Nannaa iru",s:"Nan·naa·i·ru",m:"Take care / Be good",ctx:"Warm farewell",d:0},
+{t:"மன்னிக்கவும், நான் தப்பா பேசிட்டேன்",r:"Mannikkavum, naan thappaa pesittén",s:"Man·nik·ka·vum·naan·thap·paa·pe·sit·ten",m:"Sorry, I said it wrong",ctx:"Apologize for a mistake",d:2},
+{t:"நீங்க மிகவும் கருணையுள்ளவர்",r:"Neenga migavum karunaiyullavar",s:"Neen·ga·mi·ga·vum·ka·ru·nai·yul·la·var",m:"You are very kind",ctx:"Compliment kindness",d:2},
+],
+"Daily Life":[
+{t:"நான் வேலைக்கு போறேன்",r:"Naan velaikku poren",s:"Naan·ve·laik·ku·po·ren",m:"I am going to work",ctx:"Everyday statement",d:0},
+{t:"நீங்க எங்க போறீங்க?",r:"Neenga enga poreénga?",s:"Neen·ga·en·ga·po·reen·ga",m:"Where are you going?",ctx:"Friendly check-in",d:0},
+{t:"கொஞ்சம் நேரம் ஆகும்",r:"Konjam neram aagum",s:"Kon·jam·ne·ram·aa·gum",m:"It will take some time",ctx:"Managing expectations",d:1},
+{t:"நாளைக்கு பார்க்கலாம்",r:"Naalaikku parkkalaam",s:"Naa·laik·ku·park·ka·laam",m:"Let's meet tomorrow",ctx:"Making plans",d:1},
+{t:"சீக்கிரம் வாங்க",r:"Seekkiram vaanga",s:"Seek·ki·ram·vaan·ga",m:"Come quickly",ctx:"Call someone to hurry",d:1},
+{t:"கொஞ்சம் காத்திருங்க",r:"Konjam kaathirunga",s:"Kon·jam·kaat·hi·run·ga",m:"Please wait a moment",ctx:"Ask someone to hold on",d:1},
+{t:"என்ன நடக்குது?",r:"Enna nadakkuthu?",s:"En·na·na·dak·ku·thu",m:"What's happening?",ctx:"Conversation starter",d:0},
+{t:"ஒண்ணும் இல்ல",r:"Onnum illa",s:"On·num·il·la",m:"Nothing much",ctx:"Nothing special going on",d:0},
+{t:"நான் வீட்டிலே இருக்கேன்",r:"Naan veettile irukken",s:"Naan·veet·ti·le·i·ruk·ken",m:"I am at home",ctx:"State current location",d:0},
+{t:"திரும்பி வாங்க",r:"Thirumbi vaanga",s:"Thi·rum·bi·vaan·ga",m:"Come back",ctx:"Ask someone to return",d:1},
+{t:"நான் சாப்பிட போறேன்",r:"Naan saappida poren",s:"Naan·saap·pi·da·po·ren",m:"I am going to eat",ctx:"Announce eating plan",d:0},
+{t:"நான் தூங்க போறேன்",r:"Naan thoonga poren",s:"Naan·thoon·ga·po·ren",m:"I am going to sleep",ctx:"Announce sleep time",d:0},
+{t:"மழை பெய்யுது",r:"Mazhai peyyuthu",s:"Ma·zhai·pey·yu·thu",m:"It is raining",ctx:"Weather comment",d:0},
+{t:"வெயில் அடிக்குது",r:"Veyil adikkuthu",s:"Ve·yil·a·dik·ku·thu",m:"It's very sunny / hot",ctx:"Hot weather",d:1},
+{t:"குளிரா இருக்கு",r:"Kuliraa irukku",s:"Ku·li·raa·i·ruk·ku",m:"It's cold",ctx:"Cold weather",d:0},
+{t:"நான் சோர்வா இருக்கேன்",r:"Naan sorvaa irukken",s:"Naan·sor·vaa·i·ruk·ken",m:"I am tired",ctx:"Express tiredness",d:0},
+{t:"கொஞ்சம் ஓய்வு எடுக்கணும்",r:"Konjam oyvu edukkaanum",s:"Kon·jam·oyv·u·e·duk·kaa·num",m:"Need to rest a bit",ctx:"Need a break",d:1},
+{t:"ATM எங்க இருக்கு?",r:"ATM enga irukku?",s:"ATM·en·ga·i·ruk·ku",m:"Where is the ATM?",ctx:"Find cash machine",d:1},
+{t:"நான் தாமதமா வருவேன்",r:"Naan thaamathamaa varuvén",s:"Naan·thaa·ma·tha·maa·va·ru·ven",m:"I will come late",ctx:"Warn someone you'll be late",d:2},
+{t:"தினமும் காலைல எழுந்திரிக்கிறேன்",r:"Dinamum kaalaila ezhundhirikkiren",s:"Di·na·mum·kaa·lai·la·e·zhun·dhi·rik·ki·ren",m:"I wake up every morning",ctx:"Daily routine",d:2},
+{t:"நான் ஆறு மணிக்கு எழுவேன்",r:"Naan aaru manikku ezhuvén",s:"Naan·aa·ru·ma·nik·ku·e·zhu·ven",m:"I wake up at 6 o'clock",ctx:"Morning routine",d:2},
+{t:"வாழ்க்கை நல்லா போகுது",r:"Vaazhkkai nallaa poguthu",s:"Vaazhk·kai·nal·laa·po·gu·thu",m:"Life is going well",ctx:"Positive life update",d:1},
+{t:"என்னோட கையில காசு இல்ல",r:"Ennoda kaiyila kaasu illa",s:"En·no·da·kai·yi·la·kaa·su·il·la",m:"I don't have money on me",ctx:"Out of cash",d:2},
+{t:"நான் குளிக்க போறேன்",r:"Naan kulikkka poren",s:"Naan·ku·lik·ka·po·ren",m:"I am going to bathe",ctx:"Daily routine",d:1},
+{t:"வீட்டு வேலை பண்றேன்",r:"Veettu velai panren",s:"Veet·tu·ve·lai·pan·ren",m:"I am doing housework",ctx:"Home chores",d:1},
+{t:"சந்தைக்கு போகணும்",r:"Sandhaiku poganum",s:"San·dhaik·ku·po·ga·num",m:"I need to go to the market",ctx:"Shopping errand",d:1},
+{t:"போன் பண்ணு",r:"Phone pannu",s:"Phone·pan·nu",m:"Call (on the phone)",ctx:"Ask someone to call",d:0},
+{t:"மெசேஜ் அனுப்பு",r:"Message anupu",s:"Mes·sage·a·nu·pu",m:"Send a message",ctx:"Messaging instruction",d:0},
+{t:"இன்டர்நெட் வேகமா இல்ல",r:"Internet vegamaa illa",s:"In·ter·net·ve·ga·maa·il·la",m:"Internet is slow",ctx:"Connectivity complaint",d:1},
+{t:"பேட்டரி தீர்ந்துடுச்சு",r:"Battery theerndhuduchchu",s:"Bat·te·ry·theern·dhu·du·chchu",m:"Battery is dead",ctx:"Phone/device issue",d:1},
+],
+"Food & Eating":[
+{t:"சாப்பிட்டீங்களா?",r:"Saappitteengalaa?",s:"Saap·pit·teen·ga·laa",m:"Have you eaten?",ctx:"Common cultural greeting",d:0},
+{t:"எனக்கு பசிக்குது",r:"Enakku paasikkuthu",s:"E·nak·ku·paa·sik·ku·thu",m:"I am hungry",ctx:"Express hunger",d:0},
+{t:"சாப்பிடலாமா?",r:"Saappidalaamaa?",s:"Saap·pi·da·laa·maa",m:"Shall we eat?",ctx:"Invite to eat",d:0},
+{t:"ரொம்ப ருசியா இருக்கு",r:"Romba rusiyaa irukku",s:"Rom·ba·ru·si·yaa·i·ruk·ku",m:"It's very delicious",ctx:"Compliment the food",d:0},
+{t:"கொஞ்சம் காரமா இருக்கு",r:"Konjam kaaramaa irukku",s:"Kon·jam·kaa·ra·maa·i·ruk·ku",m:"It's a bit spicy",ctx:"Comment on spice level",d:0},
+{t:"தண்ணீர் குடுங்க",r:"Thanneer kudungga",s:"Than·neer·ku·dun·ga",m:"Please give me water",ctx:"Ask for water",d:0},
+{t:"கணக்கு வாங்கலாமா?",r:"Kanakku vaangalaamaa?",s:"Ka·nak·ku·vaan·ga·laa·maa",m:"Can I have the bill?",ctx:"At a restaurant",d:1},
+{t:"மேலும் கொஞ்சம் வேணும்",r:"Méylum konjam venum",s:"Mey·lum·kon·jam·ve·num",m:"I want a little more",ctx:"Ask for seconds",d:1},
+{t:"பசி இல்லை",r:"Paasi illai",s:"Paa·si·il·lai",m:"I'm not hungry",ctx:"Politely decline food",d:0},
+{t:"என்ன சாப்பிட நல்லா இருக்கும்?",r:"Enna saappida nallaa irukum?",s:"En·na·saap·pi·da·nal·laa·i·ruk·kum",m:"What's good to eat?",ctx:"Ask for recommendation",d:1},
+{t:"சைவம் சாப்பிடுவேன்",r:"Saivam saappiduvén",s:"Sai·vam·saap·pi·du·ven",m:"I eat vegetarian food",ctx:"Dietary preference",d:1},
+{t:"இறைச்சி சாப்பிட மாட்டேன்",r:"Iraichchi saappida maattén",s:"I·raich·chi·saap·pi·da·maat·ten",m:"I don't eat meat",ctx:"Dietary restriction",d:2},
+{t:"காபி குடிக்கணும்",r:"Kaapi kudikkanum",s:"Kaa·pi·ku·dik·ka·num",m:"I want to drink coffee",ctx:"Coffee request",d:0},
+{t:"டீ வேணும்",r:"Tea venum",s:"Tea·ve·num",m:"I want tea",ctx:"Order tea",d:0},
+{t:"குளிர் பானம் கொண்டு வாங்க",r:"Kulir paanam kondu vaanga",s:"Ku·lir·paa·nam·kon·du·vaan·ga",m:"Bring a cold drink",ctx:"Ask for cold beverage",d:1},
+{t:"கொஞ்சம் உப்பு குறைவா போடுங்க",r:"Konjam uppu kuraivaapodungga",s:"Kon·jam·up·pu·ku·rai·vaa·po·dun·ga",m:"Add less salt please",ctx:"Dietary request",d:2},
+{t:"சர்க்கரை வேண்டாம்",r:"Sarkarai véndam",s:"Sar·ka·rai·ven·dam",m:"No sugar please",ctx:"No sugar request",d:1},
+{t:"ஒரு பிளேட் இட்லி கொண்டு வாங்க",r:"Oru plate idli kondu vaanga",s:"O·ru·plate·id·li·kon·du·vaan·ga",m:"Bring one plate of idli",ctx:"Order breakfast",d:1},
+{t:"தோசை கிடைக்குமா?",r:"Dosai kidaikkumaa?",s:"Do·sai·ki·daik·ku·maa",m:"Is dosa available?",ctx:"Ask for popular dish",d:1},
+{t:"சாம்பார் ரொம்ப நல்லா இருக்கு",r:"Sambar romba nallaa irukku",s:"Sam·bar·rom·ba·nal·laa·i·ruk·ku",m:"The sambar is very good",ctx:"Compliment a dish",d:1},
+{t:"பரோட்டா இரண்டு கொண்டு வாங்க",r:"Parotta irandu kondu vaanga",s:"Pa·rot·taa·i·ran·du·kon·du·vaan·ga",m:"Bring two parottas",ctx:"Order popular dish",d:1},
+{t:"வயிறு நிறைஞ்சுது",r:"Vayiru nirainju",s:"Va·yi·ru·ni·rain·ju",m:"I am full",ctx:"Say you've eaten enough",d:0},
+{t:"ரொம்ப சாப்பிட்டுட்டேன்",r:"Romba saappittutten",s:"Rom·ba·saap·pit·tut·ten",m:"I ate too much",ctx:"Overeating",d:1},
+{t:"சாப்பிட்டுட்டு போங்க",r:"Saappittutu ponga",s:"Saap·pit·tu·tu·pon·ga",m:"Please eat before you go",ctx:"Insist guest eats",d:1},
+{t:"இன்னைக்கு என்ன சமைக்கணும்?",r:"Innaiku enna samaikkanum?",s:"In·naik·ku·en·na·sa·maik·ka·num",m:"What should I cook today?",ctx:"Meal planning",d:2},
+{t:"இதுல என்ன போட்டிருக்காங்க?",r:"Idhula enna pottirukaanga?",s:"I·dhu·la·en·na·pot·ti·ruk·kaan·ga",m:"What ingredients are in this?",ctx:"Ask about dish",d:2},
+{t:"தேங்காய் சட்னி இருக்கா?",r:"Thengai chatni irukkaa?",s:"Then·gai·chat·ni·i·ruk·kaa",m:"Is there coconut chutney?",ctx:"Ask for condiment",d:2},
+{t:"சூடா கொண்டு வாங்க",r:"Sooda kondu vaanga",s:"Soo·da·kon·du·vaan·ga",m:"Bring it hot",ctx:"Request hot food",d:1},
+{t:"இனிப்பு ரொம்ப பிடிக்கும்",r:"Inippu romba pidikkum",s:"I·nip·pu·rom·ba·pi·dik·kum",m:"I love sweets a lot",ctx:"Express food preference",d:1},
+{t:"பார்சல் கொடுங்க",r:"Parcel kodungga",s:"Par·cel·ko·dun·ga",m:"Pack it to go / Give a parcel",ctx:"Takeaway request",d:1},
+],
+"Numbers & Time":[
+{t:"ஒன்று",r:"Ondru",s:"On·dru",m:"One",ctx:"Number 1",d:0},
+{t:"இரண்டு",r:"Irandu",s:"I·ran·du",m:"Two",ctx:"Number 2",d:0},
+{t:"மூன்று",r:"Moondru",s:"Moon·dru",m:"Three",ctx:"Number 3",d:0},
+{t:"நான்கு",r:"Naangu",s:"Naan·gu",m:"Four",ctx:"Number 4",d:0},
+{t:"ஐந்து",r:"Ainthu",s:"Ain·thu",m:"Five",ctx:"Number 5",d:0},
+{t:"ஆறு",r:"Aaru",s:"Aa·ru",m:"Six",ctx:"Number 6",d:0},
+{t:"ஏழு",r:"Ezhu",s:"E·zhu",m:"Seven",ctx:"Number 7",d:0},
+{t:"எட்டு",r:"Ettu",s:"Et·tu",m:"Eight",ctx:"Number 8",d:0},
+{t:"ஒன்பது",r:"Onbadhu",s:"On·ba·dhu",m:"Nine",ctx:"Number 9",d:0},
+{t:"பத்து",r:"Paththu",s:"Pat·thu",m:"Ten",ctx:"Number 10",d:0},
+{t:"பதினோரு",r:"Padhinoru",s:"Pa·dhi·no·ru",m:"Eleven",ctx:"Number 11",d:1},
+{t:"பன்னிரண்டு",r:"Pannirandu",s:"Pan·ni·ran·du",m:"Twelve",ctx:"Number 12",d:1},
+{t:"இருபது",r:"Irupadhu",s:"I·ru·pa·dhu",m:"Twenty",ctx:"Number 20",d:1},
+{t:"முப்பது",r:"Muppadhu",s:"Mup·pa·dhu",m:"Thirty",ctx:"Number 30",d:1},
+{t:"நாப்பது",r:"Naappadhu",s:"Naap·pa·dhu",m:"Forty",ctx:"Number 40",d:1},
+{t:"ஐம்பது",r:"Aimbadhu",s:"Aim·ba·dhu",m:"Fifty",ctx:"Number 50",d:1},
+{t:"நூறு",r:"Nooru",s:"Noo·ru",m:"One hundred",ctx:"Number 100",d:1},
+{t:"ஆயிரம்",r:"Aayiram",s:"Aa·yi·ram",m:"One thousand",ctx:"Number 1000",d:1},
+{t:"இப்போ என்ன மணி?",r:"Ippo enna mani?",s:"Ip·po·en·na·ma·ni",m:"What time is it now?",ctx:"Ask for the time",d:0},
+{t:"ஒரு மணி",r:"Oru mani",s:"O·ru·ma·ni",m:"One o'clock",ctx:"Telling the time",d:0},
+{t:"ஆறு மணி முப்பது நிமிஷம்",r:"Aaru mani muppadhu nimisham",s:"Aa·ru·ma·ni·mup·pa·dhu·ni·mi·sham",m:"Six thirty",ctx:"Telling the time",d:1},
+{t:"அரை மணி",r:"Arai mani",s:"A·rai·ma·ni",m:"Half hour / thirty minutes",ctx:"Time expression",d:1},
+{t:"நிமிஷம்",r:"Nimisham",s:"Ni·mi·sham",m:"Minute",ctx:"Unit of time",d:1},
+{t:"இன்னைக்கு என்ன நாள்?",r:"Innaiku enna naal?",s:"In·naik·ku·en·na·naal",m:"What day is today?",ctx:"Ask about the day",d:0},
+{t:"திங்கள்",r:"Thingal",s:"Thin·gal",m:"Monday",ctx:"Day of week",d:0},
+{t:"செவ்வாய்",r:"Sevvaai",s:"Sev·vaai",m:"Tuesday",ctx:"Day of week",d:0},
+{t:"புதன்",r:"Pudhan",s:"Pu·dhan",m:"Wednesday",ctx:"Day of week",d:0},
+{t:"வியாழன்",r:"Viyazhan",s:"Vi·yaa·zhan",m:"Thursday",ctx:"Day of week",d:0},
+{t:"வெள்ளி",r:"Velli",s:"Vel·li",m:"Friday",ctx:"Day of week",d:0},
+{t:"சனி",r:"Sani",s:"Sa·ni",m:"Saturday",ctx:"Day of week",d:0},
+{t:"ஞாயிறு",r:"Naayiru",s:"Naay·i·ru",m:"Sunday",ctx:"Day of week",d:0},
+{t:"இன்னைக்கு",r:"Innaiku",s:"In·naik·ku",m:"Today",ctx:"Referring to today",d:0},
+{t:"நாளைக்கு",r:"Naalaikku",s:"Naa·laik·ku",m:"Tomorrow",ctx:"Next day",d:0},
+{t:"நேத்து",r:"Néthu",s:"Ne·thu",m:"Yesterday",ctx:"Previous day",d:0},
+{t:"ஒரு வாரம்",r:"Oru vaaram",s:"O·ru·vaa·ram",m:"One week",ctx:"Time duration",d:1},
+{t:"ஒரு மாசம்",r:"Oru maasam",s:"O·ru·maa·sam",m:"One month",ctx:"Time duration",d:1},
+{t:"ஒரு வருஷம்",r:"Oru varusham",s:"O·ru·va·ru·sham",m:"One year",ctx:"Time duration",d:1},
+{t:"இந்த வாரம்",r:"Indha vaaram",s:"In·dha·vaa·ram",m:"This week",ctx:"Current week",d:1},
+{t:"அடுத்த வாரம்",r:"Aduththa vaaram",s:"A·duth·tha·vaa·ram",m:"Next week",ctx:"Following week",d:1},
+{t:"இது எவ்வளவு?",r:"Idhu evvalavu?",s:"I·dhu·ev·va·la·vu",m:"How much is this?",ctx:"Ask price",d:0},
+{t:"சீக்கிரம்",r:"Seekkiram",s:"Seek·ki·ram",m:"Quickly / Soon",ctx:"Express urgency",d:0},
+],
+"Directions & Travel":[
+{t:"பஸ் நிறுத்தம் எங்க?",r:"Bus niruttham enga?",s:"Bus·ni·rut·tham·en·ga",m:"Where is the bus stop?",ctx:"Ask for directions",d:0},
+{t:"நேரே போங்க",r:"Néré ponga",s:"Ne·re·pon·ga",m:"Go straight",ctx:"Give directions",d:0},
+{t:"வலதுபுறம் திரும்புங்க",r:"Valadhu puram thirumbunga",s:"Va·la·dhu·pu·ram·thi·rum·bun·ga",m:"Turn right",ctx:"Giving directions",d:0},
+{t:"இடதுபுறம் திரும்புங்க",r:"Idadhu puram thirumbunga",s:"I·da·dhu·pu·ram·thi·rum·bun·ga",m:"Turn left",ctx:"Giving directions",d:0},
+{t:"நான் தொலைந்து போனேன்",r:"Naan tholainthu ponén",s:"Naan·tho·lain·thu·po·nen",m:"I am lost",ctx:"Need navigation help",d:1},
+{t:"இங்க இருந்து எவ்வளவு தூரம்?",r:"Inga irundhu evvalavu thooram?",s:"In·ga·i·run·dhu·ev·va·la·vu·thoo·ram",m:"How far from here?",ctx:"Ask about distance",d:1},
+{t:"அருகில் இருக்கா?",r:"Arugil irukkaa?",s:"A·ru·gil·i·ruk·kaa",m:"Is it nearby?",ctx:"Check if close",d:1},
+{t:"ரயில் நிலையம் எங்க?",r:"Rail nilayam enga?",s:"Rail·ni·la·yam·en·ga",m:"Where is the train station?",ctx:"Find train station",d:1},
+{t:"விமான நிலையம் எங்க?",r:"Vimaana nilayam enga?",s:"Vi·maa·na·ni·la·yam·en·ga",m:"Where is the airport?",ctx:"Find airport",d:1},
+{t:"டாக்சி கிடைக்குமா?",r:"Taxi kidaikkumaa?",s:"Tax·i·ki·daik·ku·maa",m:"Can I get a taxi?",ctx:"Find transportation",d:1},
+{t:"இந்த பேருந்து எங்க போகும்?",r:"Indha pérundhu enga pogum?",s:"In·dha·pe·run·dhu·en·ga·po·gum",m:"Where does this bus go?",ctx:"Ask bus destination",d:2},
+{t:"டிக்கட் எவ்வளவு?",r:"Ticket evvalavu?",s:"Tick·et·ev·va·la·vu",m:"How much is the ticket?",ctx:"Ask ticket price",d:1},
+{t:"ஒரு டிக்கட் வேணும்",r:"Oru ticket venum",s:"O·ru·tick·et·ve·num",m:"I need one ticket",ctx:"Buy a ticket",d:1},
+{t:"இங்க நிறுத்துங்க",r:"Inga nirutthunga",s:"In·ga·ni·rut·thun·ga",m:"Stop here",ctx:"Tell driver to stop",d:1},
+{t:"வேகமா ஓட்டாதீங்க",r:"Végamaa ottaadeenga",s:"Ve·ga·maa·ot·taa·deen·ga",m:"Don't drive fast",ctx:"Ask driver to slow down",d:2},
+{t:"இது சரியான வழி தானா?",r:"Idhu sariyaana vazhi thaanaa?",s:"I·dhu·sa·ri·yaa·na·va·zhi·thaa·naa",m:"Is this the right way?",ctx:"Confirm direction",d:2},
+{t:"சிக்னலில் திரும்புங்க",r:"Signal-il thirumbunga",s:"Sig·nal·il·thi·rum·bun·ga",m:"Turn at the signal",ctx:"Directions using landmark",d:1},
+{t:"மீட்டர் போடுங்க",r:"Meter podungga",s:"Me·ter·po·dun·ga",m:"Start the meter (taxi)",ctx:"Taxi meter request",d:1},
+{t:"நான் ஹோட்டலில் இருக்கேன்",r:"Naan Hotel-il irukken",s:"Naan·Ho·tel·il·i·ruk·ken",m:"I am at the hotel",ctx:"State location",d:1},
+{t:"நடந்து எவ்வளவு நேரம் ஆகும்?",r:"Nadandhu evvalavu neram aagum?",s:"Na·dan·dhu·ev·va·la·vu·ne·ram·aa·gum",m:"How long to walk?",ctx:"Estimate walking time",d:2},
+{t:"அந்த கட்டிடம் எது?",r:"Andha kattadam edhu?",s:"An·dha·kat·ta·dam·e·dhu",m:"Which building is that?",ctx:"Ask about landmark",d:2},
+{t:"வலதுபுறம் திரும்பிட்டு நேரே போங்க",r:"Valadhu puram thirumbittu néré ponga",s:"Va·la·dhu·pu·ram·thi·rum·bit·tu·ne·re·pon·ga",m:"Turn right then go straight",ctx:"Combined direction",d:2},
+{t:"பாலம் கடந்து போங்க",r:"Paalam kadandhu ponga",s:"Paa·lam·ka·dan·dhu·pon·ga",m:"Cross the bridge and go",ctx:"Landmark directions",d:2},
+{t:"இந்த ரோட்டில் போங்க",r:"Indha road-il ponga",s:"In·dha·road·il·pon·ga",m:"Go on this road",ctx:"Direct to a road",d:1},
+{t:"கடைசி பஸ் எத்தனை மணிக்கு?",r:"Kadaisi bus ethanai manikku?",s:"Ka·dai·si·bus·et·ha·nai·ma·nik·ku",m:"What time is the last bus?",ctx:"Check transport schedule",d:2},
+],
+"Shopping":[
+{t:"இது எவ்வளவு?",r:"Idhu evvalavu?",s:"I·dhu·ev·va·la·vu",m:"How much is this?",ctx:"Ask price",d:0},
+{t:"விலை என்ன?",r:"Vilai enna?",s:"Vi·lai·en·na",m:"What is the price?",ctx:"Ask for cost",d:0},
+{t:"இது கொஞ்சம் விலை குறைக்க முடியுமா?",r:"Idhu konjam vilai kuraika mudiyumaa?",s:"I·dhu·kon·jam·vi·lai·ku·rai·ka·mu·di·yu·maa",m:"Can you reduce the price?",ctx:"Bargaining",d:1},
+{t:"இதோட சைஸ் இருக்கா?",r:"Ithooda size irukkaa?",s:"I·thoo·da·size·i·ruk·kaa",m:"Do you have this size?",ctx:"Clothes shopping",d:1},
+{t:"வேற கலர் இருக்கா?",r:"Vérra kalr irukkaa?",s:"Ver·ra·ka·lr·i·ruk·kaa",m:"Do you have another color?",ctx:"Shopping options",d:1},
+{t:"இது எடுக்கிறேன்",r:"Idhu edukkirén",s:"I·dhu·e·duk·ki·ren",m:"I'll take this",ctx:"Confirm purchase",d:1},
+{t:"பேக் கொடுங்க",r:"Bag kodungga",s:"Bag·ko·dun·ga",m:"Please give a bag",ctx:"Ask for bag",d:0},
+{t:"ரசீது கொடுங்க",r:"Receipt kodungga",s:"Re·ceipt·ko·dun·ga",m:"Please give a receipt",ctx:"Ask for receipt",d:1},
+{t:"கார்டு வருமா?",r:"Card varumaa?",s:"Card·va·ru·maa",m:"Do you accept card?",ctx:"Card payment",d:1},
+{t:"டிஸ்கவுன்ட் கிடைக்குமா?",r:"Discount kidaikkumaa?",s:"Dis·count·ki·daik·ku·maa",m:"Can I get a discount?",ctx:"Ask for discount",d:1},
+{t:"இது ஒரிஜினல் தானா?",r:"Idhu original thaanaa?",s:"I·dhu·o·ri·gi·nal·thaa·naa",m:"Is this original?",ctx:"Check authenticity",d:2},
+{t:"கியாரன்டி இருக்கா?",r:"Guarantee irukkaa?",s:"Gua·ran·tee·i·ruk·kaa",m:"Is there a guarantee?",ctx:"Warranty question",d:2},
+{t:"இதோட விலை ரொம்ப ஜாஸ்தி",r:"Ithooda vilai romba jaasthi",s:"I·thoo·da·vi·lai·rom·ba·jaas·thi",m:"This is too expensive",ctx:"Comment on high price",d:1},
+{t:"சின்னதா இருக்கா?",r:"Sinnathaa irukkaa?",s:"Sin·na·thaa·i·ruk·kaa",m:"Do you have a smaller one?",ctx:"Ask for smaller size",d:1},
+{t:"இன்னிக்கு சேல் இருக்கா?",r:"Innaiku sale irukkaa?",s:"In·naik·ku·sale·i·ruk·kaa",m:"Is there a sale today?",ctx:"Check for discounts",d:1},
+{t:"நான் யோசிச்சு சொல்றேன்",r:"Naan yosichu sollren",s:"Naan·yo·sich·chu·sol·ren",m:"I'll think about it",ctx:"Undecided buyer",d:2},
+{t:"திரும்ப கொடுக்கலாமா?",r:"Thirumba kodukkalaama?",s:"Thi·rum·ba·ko·duk·ka·laa·maa",m:"Can I return this?",ctx:"Return policy",d:2},
+{t:"இதை கிஃப்ட் ரேப் பண்ணுங்க",r:"Idhai gift wrap pannungga",s:"I·dhai·gift·wrap·pan·nun·ga",m:"Please gift wrap this",ctx:"Gift shop request",d:2},
+{t:"அது மிகவும் நல்லா இருக்கு",r:"Adhu migavum nallaa irukku",s:"A·dhu·mi·ga·vum·nal·laa·i·ruk·ku",m:"That looks very nice",ctx:"Compliment item",d:1},
+{t:"UPI வருமா?",r:"UPI varumaa?",s:"UPI·va·ru·maa",m:"Do you accept UPI?",ctx:"Digital payment",d:1},
+{t:"இது கொஞ்சம் பெரிசா இருக்கு",r:"Idhu konjam perisaa irukku",s:"I·dhu·kon·jam·pe·ri·saa·i·ruk·ku",m:"This is a bit large",ctx:"Size feedback",d:1},
+{t:"புது தொகுப்பு இருக்கா?",r:"Pudhu thokuppu irukkaa?",s:"Pu·dhu·tho·kup·pu·i·ruk·kaa",m:"Do you have new stock?",ctx:"Ask for new arrivals",d:2},
+],
+"Health":[
+{t:"எனக்கு உடம்பு சரியில்ல",r:"Enakku udambu sariyilla",s:"E·nak·ku·u·dam·bu·sa·ri·yil·la",m:"I'm not feeling well",ctx:"Tell someone you're unwell",d:1},
+{t:"என்னோட தலை வலிக்குது",r:"Ennoda thalai valikkuthu",s:"En·no·da·tha·lai·va·lik·ku·thu",m:"I have a headache",ctx:"Headache",d:1},
+{t:"டாக்டர் கிட்ட போகணும்",r:"Doctor kitta poganum",s:"Doc·tor·kit·ta·po·ga·num",m:"I need to go to the doctor",ctx:"Medical situation",d:1},
+{t:"மருந்து வேணும்",r:"Marundhu venum",s:"Ma·run·dhu·ve·num",m:"I need medicine",ctx:"At a pharmacy",d:1},
+{t:"இங்க ஆஸ்பத்திரி இருக்கா?",r:"Inga aaspathiri irukkaa?",s:"In·ga·aas·pa·thi·ri·i·ruk·kaa",m:"Is there a hospital nearby?",ctx:"Find medical help",d:1},
+{t:"காய்ச்சல் வருது",r:"Kaaichchal varudhu",s:"Kaich·chal·va·ru·dhu",m:"I have a fever",ctx:"Fever symptom",d:1},
+{t:"வாந்தி வருது",r:"Vaandhi varudhu",s:"Vaan·dhi·va·ru·dhu",m:"I feel like vomiting",ctx:"Nausea symptom",d:1},
+{t:"வயிறு வலிக்குது",r:"Vayiru valikkuthu",s:"Va·yi·ru·va·lik·ku·thu",m:"I have a stomach ache",ctx:"Stomach pain",d:1},
+{t:"சளி பிடிச்சிருக்கு",r:"Sali pidichirikku",s:"Sa·li·pi·dich·chi·rik·ku",m:"I have a cold",ctx:"Common cold",d:1},
+{t:"இருமல் வருது",r:"Irumal varudhu",s:"I·ru·mal·va·ru·dhu",m:"I have a cough",ctx:"Cough",d:1},
+{t:"கால் வலிக்குது",r:"Kaal valikkuthu",s:"Kaal·va·lik·ku·thu",m:"My leg hurts",ctx:"Leg pain",d:1},
+{t:"முதுகு வலிக்குது",r:"Muthuqu valikkuthu",s:"Mu·thu·gu·va·lik·ku·thu",m:"My back hurts",ctx:"Back pain",d:1},
+{t:"பல் வலிக்குது",r:"Pal valikkuthu",s:"Pal·va·lik·ku·thu",m:"I have a toothache",ctx:"Toothache",d:1},
+{t:"மருந்தகம் எங்க இருக்கு?",r:"Marundhaham enga irukku?",s:"Ma·run·tha·ham·en·ga·i·ruk·ku",m:"Where is the pharmacy?",ctx:"Find pharmacy",d:1},
+{t:"ஒரு நாளுக்கு எத்தனை தடவை?",r:"Oru naallukku ethanai thadavai?",s:"O·ru·naal·luk·ku·et·ha·nai·tha·da·vai",m:"How many times a day?",ctx:"Medicine dosage",d:2},
+{t:"சாப்பிட்டுட்டு மருந்து சாப்பிடணும்",r:"Saappittutu marundhu saappidhanum",s:"Saap·pit·tu·tu·ma·run·dhu·saap·pi·dha·num",m:"Take medicine after eating",ctx:"Medicine instruction",d:2},
+{t:"சரியா ஆயிட்டீங்களா?",r:"Sariyaa aayittingalaa?",s:"Sa·ri·yaa·aa·yit·tin·ga·laa",m:"Are you feeling better?",ctx:"Check on recovery",d:1},
+{t:"ஓய்வு எடுங்க",r:"Oyvu edungga",s:"Oy·vu·e·dun·ga",m:"Please take rest",ctx:"Advise to rest",d:1},
+{t:"எனக்கு சர்க்கரை நோய் இருக்கு",r:"Enakku sarkarai noi irukku",s:"E·nak·ku·sar·ka·rai·noi·i·ruk·ku",m:"I have diabetes",ctx:"State medical condition",d:2},
+{t:"காயம் பட்டிருக்கேன்",r:"Kaayam pattirukken",s:"Kaa·yam·pat·ti·ruk·ken",m:"I am injured",ctx:"Report injury",d:2},
+{t:"இரத்தம் வருது",r:"Iraththam varudhu",s:"I·rat·tham·va·ru·dhu",m:"There is bleeding",ctx:"Bleeding",d:2},
+],
+"Family":[
+{t:"இது என் அம்மா",r:"Idhu en ammaa",s:"I·dhu·en·am·maa",m:"This is my mother",ctx:"Introduce mother",d:0},
+{t:"இது என் அப்பா",r:"Idhu en appaa",s:"I·dhu·en·ap·paa",m:"This is my father",ctx:"Introduce father",d:0},
+{t:"என் அண்ணன்",r:"En annan",s:"En·an·nan",m:"My elder brother",ctx:"Elder brother",d:0},
+{t:"என் தம்பி",r:"En thambi",s:"En·tham·bi",m:"My younger brother",ctx:"Younger brother",d:0},
+{t:"என் அக்கா",r:"En akkaa",s:"En·ak·kaa",m:"My elder sister",ctx:"Elder sister",d:0},
+{t:"என் தங்கை",r:"En thangai",s:"En·than·gai",m:"My younger sister",ctx:"Younger sister",d:0},
+{t:"என் மனைவி",r:"En manaivi",s:"En·ma·nai·vi",m:"My wife",ctx:"Wife",d:0},
+{t:"என் கணவன்",r:"En kanavan",s:"En·ka·na·van",m:"My husband",ctx:"Husband",d:0},
+{t:"என் மகன்",r:"En magan",s:"En·ma·gan",m:"My son",ctx:"Son",d:0},
+{t:"என் மகள்",r:"En magal",s:"En·ma·gal",m:"My daughter",ctx:"Daughter",d:0},
+{t:"என் தாத்தா",r:"En thaathaa",s:"En·thaat·haa",m:"My grandfather",ctx:"Grandfather",d:0},
+{t:"என் பாட்டி",r:"En paatti",s:"En·paat·ti",m:"My grandmother",ctx:"Grandmother",d:0},
+{t:"என் மாமா",r:"En maamaa",s:"En·maa·maa",m:"My uncle (maternal)",ctx:"Maternal uncle",d:0},
+{t:"என் அத்தை",r:"En athai",s:"En·at·thai",m:"My aunt (father's sister)",ctx:"Paternal aunt",d:0},
+{t:"என் நண்பன்",r:"En nanban",s:"En·nan·ban",m:"My (male) friend",ctx:"Male friend",d:0},
+{t:"என் தோழி",r:"En thozhi",s:"En·tho·zhi",m:"My (female) friend",ctx:"Female friend",d:0},
+{t:"உங்களுக்கு குழந்தைகள் இருக்காங்களா?",r:"Ungalukku kuzhandhaigal irukkaangalaa?",s:"Un·ga·luk·ku·ku·zhan·dhai·gal·i·ruk·kaan·ga·laa",m:"Do you have children?",ctx:"Polite question",d:2},
+{t:"எனக்கு இரண்டு குழந்தைகள்",r:"Enakku irandu kuzhandhaigal",s:"E·nak·ku·i·ran·du·ku·zhan·dhai·gal",m:"I have two children",ctx:"About children",d:1},
+{t:"நான் திருமணமானவன்",r:"Naan thirumanamaanavann",s:"Naan·thi·ru·ma·na·maa·na·van",m:"I am married (male)",ctx:"Marital status",d:1},
+{t:"நான் திருமணமாகவில்லை",r:"Naan thirumanamaakavillai",s:"Naan·thi·ru·ma·na·maa·ka·vil·lai",m:"I am not married",ctx:"Single",d:1},
+{t:"குடும்பம் எப்படி இருக்காங்க?",r:"Kudumbam eppadi irukaanga?",s:"Ku·dum·bam·ep·pa·di·i·ruk·kaan·ga",m:"How is the family?",ctx:"Ask about family",d:1},
+],
+"Emotions":[
+{t:"எனக்கு மகிழ்ச்சியா இருக்கு",r:"Enakku magizhchiyaa irukku",s:"E·nak·ku·ma·gizh·chi·yaa·i·ruk·ku",m:"I am happy",ctx:"Express happiness",d:1},
+{t:"ரொம்ப சந்தோஷம்",r:"Romba santhosham",s:"Rom·ba·san·tho·sham",m:"Very happy / Joyful",ctx:"Great joy",d:0},
+{t:"எனக்கு சோர்வா இருக்கு",r:"Enakku sorvaa irukku",s:"E·nak·ku·sor·vaa·i·ruk·ku",m:"I am tired",ctx:"Tiredness",d:0},
+{t:"எனக்கு கோபமா இருக்கு",r:"Enakku gopamaa irukku",s:"E·nak·ku·go·pa·maa·i·ruk·ku",m:"I am angry",ctx:"Express anger",d:1},
+{t:"பயமா இருக்கு",r:"Payamaa irukku",s:"Pa·ya·maa·i·ruk·ku",m:"I am scared",ctx:"Express fear",d:1},
+{t:"கஷ்டமா இருக்கு",r:"Kashtamaa irukku",s:"Kash·ta·maa·i·ruk·ku",m:"It's difficult",ctx:"Express difficulty",d:1},
+{t:"ஆச்சரியமா இருக்கு",r:"Aachariyamaa irukku",s:"Aa·cha·ri·ya·maa·i·ruk·ku",m:"I am surprised",ctx:"Express surprise",d:1},
+{t:"கவலைப்படாதே",r:"Kavalaipadaathe",s:"Ka·va·lai·pa·daa·the",m:"Don't worry (informal)",ctx:"Reassure a friend",d:1},
+{t:"நல்லா ஆகும்",r:"Nallaa aagum",s:"Nal·laa·aa·gum",m:"It will get better",ctx:"Encouragement",d:1},
+{t:"அழாதே",r:"Azhaadhe",s:"A·zhaa·dhe",m:"Don't cry",ctx:"Comfort someone",d:1},
+{t:"சிரி",r:"Siri",s:"Si·ri",m:"Smile",ctx:"Tell someone to smile",d:0},
+{t:"பயப்படாதே",r:"Payappadaathe",s:"Pa·yap·pa·daa·the",m:"Don't be afraid",ctx:"Comfort someone scared",d:1},
+{t:"உங்களை நேசிக்கிறேன்",r:"Ungalai nesikiren",s:"Un·ga·lai·ne·sik·ki·ren",m:"I love you (formal)",ctx:"Express love formally",d:1},
+{t:"உன்னை நேசிக்கிறேன்",r:"Unnai nesikiren",s:"Un·nai·ne·sik·ki·ren",m:"I love you (informal)",ctx:"Express love informally",d:1},
+{t:"கோபப்படாதே",r:"Gopappadaathe",s:"Go·pap·pa·daa·the",m:"Don't be angry",ctx:"Calm someone",d:1},
+{t:"மனசு சரியில்ல",r:"Manasu sariyilla",s:"Ma·na·su·sa·ri·yil·la",m:"Not feeling mentally well",ctx:"Mental state",d:2},
+{t:"என்னோட மனசு நிறைஞ்சது",r:"Ennoda manasu nirainju",s:"En·no·da·ma·na·su·ni·rain·ju",m:"My heart is full / I am content",ctx:"Deep contentment",d:2},
+{t:"சலிப்பா இருக்கு",r:"Salippaa irukku",s:"Sa·lip·paa·i·ruk·ku",m:"I am bored",ctx:"Express boredom",d:1},
+{t:"நம்பிக்கை இருக்கு",r:"Nambikkai irukku",s:"Nam·bik·kai·i·ruk·ku",m:"I have confidence",ctx:"Express confidence",d:2},
+{t:"மகிழ்வா இரு",r:"Magizhvaa iru",s:"Ma·gizh·vaa·i·ru",m:"Be happy",ctx:"Wish happiness",d:1},
+],
+"At Work":[
+{t:"கூட்டம் எத்தனை மணிக்கு?",r:"Koottam ethanai manikku?",s:"Koot·tam·et·ha·nai·ma·nik·ku",m:"What time is the meeting?",ctx:"Office conversation",d:1},
+{t:"நான் லேட் ஆயிட்டேன்",r:"Naan late aaytten",s:"Naan·late·aa·yit·ten",m:"I am late",ctx:"Arriving late",d:1},
+{t:"வேலை முடிஞ்சுது",r:"Velai mudinjuthu",s:"Ve·lai·mu·din·ju·thu",m:"Work is done",ctx:"Task complete",d:1},
+{t:"இதை எப்படி செய்வது?",r:"Idhai eppadi seyvadhu?",s:"I·dhai·ep·pa·di·sey·va·dhu",m:"How to do this?",ctx:"Ask for instructions",d:1},
+{t:"ஈமெயில் அனுப்பணும்",r:"Email anuppanum",s:"E·mail·a·nup·pa·num",m:"Need to send an email",ctx:"Office task",d:1},
+{t:"ரிப்போர்ட் தயார் ஆயிட்டுதா?",r:"Report thayaar aayittudaa?",s:"Re·port·tha·yaar·aa·yit·tu·daa",m:"Is the report ready?",ctx:"Check completion",d:2},
+{t:"இன்னைக்கு டெட்லைன்",r:"Innaiku deadline",s:"In·naik·ku·dead·line",m:"Today is the deadline",ctx:"Urgent reminder",d:1},
+{t:"கொஞ்சம் நேரம் வேணும்",r:"Konjam neram venum",s:"Kon·jam·ne·ram·ve·num",m:"I need some time",ctx:"Ask for more time",d:1},
+{t:"நான் வீட்டில இருந்து வேலை செய்றேன்",r:"Naan veettil irundhu velai seiren",s:"Naan·veet·til·i·run·dhu·ve·lai·sei·ren",m:"I am working from home",ctx:"Remote work",d:2},
+{t:"கம்ப்யூட்டர் ஹேங் ஆகுது",r:"Computer hang aaguthu",s:"Com·pu·ter·hang·aa·gu·thu",m:"Computer is frozen",ctx:"Tech issue",d:1},
+{t:"பாடம் புரிஞ்சுதா?",r:"Paadam purinjudaa?",s:"Paa·dam·pu·rin·ju·daa",m:"Did you understand the lesson?",ctx:"Teacher to student",d:1},
+{t:"ஹோம்வேர்க் செய்தியா?",r:"Homework seithiyaa?",s:"Home·work·sei·thi·yaa",m:"Did you do your homework?",ctx:"School context",d:0},
+{t:"நல்லா படி",r:"Nallaa padi",s:"Nal·laa·pa·di",m:"Study well",ctx:"Encouragement to student",d:0},
+{t:"பரீட்சை எப்போ?",r:"Pariksha eppo?",s:"Pa·rik·sha·ep·po",m:"When is the exam?",ctx:"Student question",d:1},
+{t:"இந்த புரோஜெக்ட் எப்போ முடியும்?",r:"Indha project eppo mudiyum?",s:"In·dha·pro·ject·ep·po·mu·di·yum",m:"When will this project finish?",ctx:"Project timeline",d:2},
+],
+"Emergencies":[
+{t:"உதவி!",r:"Udhavi!",s:"U·dha·vi",m:"Help!",ctx:"Emergency call",d:0},
+{t:"போலீஸ் கூப்பிடுங்க",r:"Police kooppidunga",s:"Po·lees·koop·pi·dun·ga",m:"Call the police",ctx:"Emergency",d:1},
+{t:"ஆம்புலன்ஸ் கூப்பிடுங்க",r:"Ambulance kooppidunga",s:"Am·bu·lans·koop·pi·dun·ga",m:"Call an ambulance",ctx:"Medical emergency",d:1},
+{t:"தீ பிடிச்சிருக்கு!",r:"Thee pidichirikku!",s:"Thee·pi·dich·chi·rik·ku",m:"There is a fire!",ctx:"Fire emergency",d:1},
+{t:"திருடன்!",r:"Thirudan!",s:"Thi·ru·dan",m:"Thief!",ctx:"Alert about theft",d:1},
+{t:"என்னோட பேர்ஸ் தொலைஞ்சு போச்சு",r:"Ennoda purse tholainju pochu",s:"En·no·da·purse·tho·lain·ju·po·chu",m:"My wallet is lost",ctx:"Lost item",d:1},
+{t:"என்னோட மொபைல் தொலைஞ்சு போச்சு",r:"Ennoda mobile tholainju pochu",s:"En·no·da·mo·bile·tho·lain·ju·po·chu",m:"My mobile is lost",ctx:"Lost phone",d:1},
+{t:"விபத்து நடந்துவிட்டது",r:"Vipaththu nadandhuvittadhu",s:"Vi·pat·thu·na·dan·dhu·vit·ta·dhu",m:"An accident has happened",ctx:"Report accident",d:2},
+{t:"யாராவது டாக்டர் இருக்காங்களா?",r:"Yaaraavathu doctor irukaangalaa?",s:"Yaa·raa·va·thu·doc·tor·i·ruk·kaan·ga·laa",m:"Is there a doctor here?",ctx:"Medical emergency",d:2},
+{t:"உடனே ஆஸ்பத்திரிக்கு போகணும்",r:"Udané aaspathhirikku poganum",s:"U·da·ne·aas·pa·thi·rik·ku·po·ga·num",m:"Need to go to hospital immediately",ctx:"Urgent medical need",d:2},
+{t:"என்னோட பாஸ்போர்ட் தொலைஞ்சது",r:"Ennoda passport tholainjthu",s:"En·no·da·pass·port·tho·lain·jthu",m:"My passport is lost",ctx:"Lost document",d:2},
+{t:"அவங்களுக்கு மூச்சு வரல",r:"Avangalukku moochu varala",s:"A·van·ga·luk·ku·mooch·chu·va·ra·la",m:"They are not breathing",ctx:"CPR emergency",d:2},
+],
+"Describing Things":[
+{t:"இது நல்லா இருக்கு",r:"Idhu nallaa irukku",s:"I·dhu·nal·laa·i·ruk·ku",m:"This is good",ctx:"Positive comment",d:0},
+{t:"இது மோசமா இருக்கு",r:"Idhu mosamaa irukku",s:"I·dhu·mo·sa·maa·i·ruk·ku",m:"This is bad",ctx:"Negative comment",d:0},
+{t:"இது பெரிசா இருக்கு",r:"Idhu perisaa irukku",s:"I·dhu·pe·ri·saa·i·ruk·ku",m:"This is big",ctx:"Size",d:0},
+{t:"இது சின்னதா இருக்கு",r:"Idhu sinnathaa irukku",s:"I·dhu·sin·na·thaa·i·ruk·ku",m:"This is small",ctx:"Size",d:0},
+{t:"இது சூடா இருக்கு",r:"Idhu soodaa irukku",s:"I·dhu·soo·daa·i·ruk·ku",m:"This is hot",ctx:"Temperature",d:0},
+{t:"இது குளிர்ச்சியா இருக்கு",r:"Idhu kulirrchiyaa irukku",s:"I·dhu·ku·lirr·chi·yaa·i·ruk·ku",m:"This is cold",ctx:"Temperature",d:0},
+{t:"இது அழகா இருக்கு",r:"Idhu azhagaa irukku",s:"I·dhu·a·zha·gaa·i·ruk·ku",m:"This is beautiful",ctx:"Aesthetic compliment",d:0},
+{t:"இது கஷ்டமா இருக்கு",r:"Idhu kashtamaa irukku",s:"I·dhu·kash·ta·maa·i·ruk·ku",m:"This is difficult",ctx:"Difficulty",d:0},
+{t:"இது எளிதா இருக்கு",r:"Idhu elitaa irukku",s:"I·dhu·e·li·taa·i·ruk·ku",m:"This is easy",ctx:"Ease",d:0},
+{t:"இது புதுசு",r:"Idhu puthusu",s:"I·dhu·pu·thu·su",m:"This is new",ctx:"Newness",d:0},
+{t:"இது பழையது",r:"Idhu pazhaiadhu",s:"I·dhu·pa·zhai·a·dhu",m:"This is old",ctx:"Age of item",d:0},
+{t:"இது கனமா இருக்கு",r:"Idhu kanamaa irukku",s:"I·dhu·ka·na·maa·i·ruk·ku",m:"This is heavy",ctx:"Weight",d:1},
+{t:"இது லேசா இருக்கு",r:"Idhu léésaa irukku",s:"I·dhu·lee·saa·i·ruk·ku",m:"This is light",ctx:"Weight",d:1},
+{t:"இது சத்தமா இருக்கு",r:"Idhu saththamaa irukku",s:"I·dhu·sat·tha·maa·i·ruk·ku",m:"This is loud / noisy",ctx:"Sound",d:1},
+{t:"இது அமைதியா இருக்கு",r:"Idhu amaithiyaa irukku",s:"I·dhu·a·mai·thi·yaa·i·ruk·ku",m:"This is quiet",ctx:"Sound",d:1},
+{t:"இது மென்மையா இருக்கு",r:"Idhu menmayaa irukku",s:"I·dhu·men·ma·yaa·i·ruk·ku",m:"This is soft",ctx:"Texture",d:1},
+{t:"இது கடினமா இருக்கு",r:"Idhu kadinamaa irukku",s:"I·dhu·ka·di·na·maa·i·ruk·ku",m:"This is hard",ctx:"Texture",d:1},
+{t:"நிறைய இருக்கு",r:"Nirayaa irukku",s:"Ni·ra·yaa·i·ruk·ku",m:"There is a lot",ctx:"Plenty",d:0},
+{t:"கொஞ்சம் இருக்கு",r:"Konjam irukku",s:"Kon·jam·i·ruk·ku",m:"There is a little",ctx:"Small amount",d:0},
+{t:"ஒண்ணும் இல்ல",r:"Onnum illa",s:"On·num·il·la",m:"There is nothing",ctx:"None",d:0},
+{t:"இது நல்ல வாசனையா இருக்கு",r:"Idhu nalla vaasanaiyaa irukku",s:"I·dhu·nal·la·vaa·sa·nai·yaa·i·ruk·ku",m:"This smells good",ctx:"Smell",d:1},
+{t:"இது வேகமா போகுது",r:"Idhu végamaa pogudhu",s:"I·dhu·ve·ga·maa·po·gu·dhu",m:"This is going fast",ctx:"Speed",d:1},
+]
+};
+
+const DIFF_LABELS = ["Beginner","Intermediate","Advanced"];
+let curSection = Object.keys(PHRASES)[0];
+let curIdx = 0;
+let listening = false;
+let recog = null;
+let hintOn = false;
+let mode = "learn";
+let filteredPhrases = null;
+let apiKey = "";
+let stats = {correct:0, total:0, mastered:{}, streak:0, lastDate:"", history:{}};
+let deferredInstall = null;
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById("install-banner").classList.add("show");
+});
+function installApp() {
+  if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; document.getElementById("install-banner").classList.remove("show"); }
+}
+
+function saveApiKey() {
+  const v = document.getElementById("api-key-input").value.trim();
+  if (v) {
+    apiKey = v; localStorage.setItem("tm_apikey", v);
+    document.getElementById("api-saved").classList.add("show");
+    document.getElementById("api-key-input").value = "sk-ant-***saved***";
+    setTimeout(() => document.getElementById("api-section").style.display = "none", 1500);
+  }
+}
+function loadApiKey() {
+  const k = localStorage.getItem("tm_apikey");
+  if (k) { apiKey = k; document.getElementById("api-section").style.display = "none"; }
+}
+
+function loadStats() {
+  try { const s = JSON.parse(localStorage.getItem("tm_stats3")||"{}"); stats = Object.assign(stats, s); refreshStats(); } catch(e) {}
+}
+function saveStats() {
+  try { localStorage.setItem("tm_stats3", JSON.stringify(stats)); } catch(e) {}
+}
+function refreshStats() {
+  document.getElementById("s-correct").textContent = stats.correct||0;
+  document.getElementById("s-total").textContent = stats.total||0;
+  const acc = stats.total ? Math.round(((stats.correct||0)/stats.total)*100)+"%" : "—";
+  document.getElementById("s-accuracy").textContent = acc;
+  const m = Object.values(stats.mastered||{}).filter(v=>v>=3).length;
+  document.getElementById("s-mastered").textContent = m;
+  document.getElementById("streak-val").textContent = stats.streak||0;
+}
+
+function getPhrases() { return filteredPhrases || PHRASES[curSection]; }
+
+function buildTabs() {
+  const el = document.getElementById("topic-tabs"); el.innerHTML = "";
+  if (filteredPhrases) {
+    const b = document.createElement("button"); b.className = "topic-btn active";
+    b.textContent = "Search (" + filteredPhrases.length + ")";
+    b.onclick = () => { filteredPhrases = null; document.getElementById("search-input").value = ""; buildTabs(); render(); };
+    el.appendChild(b); return;
+  }
+  Object.keys(PHRASES).forEach(sec => {
+    const b = document.createElement("button");
+    b.className = "topic-btn" + (sec === curSection ? " active" : "");
+    const total = PHRASES[sec].length;
+    const done = PHRASES[sec].filter((_,i) => (stats.history||{})[sec+"_"+i]>=1).length;
+    b.innerHTML = sec + ` <span class="topic-count">${done}/${total}</span>`;
+    b.onclick = () => { curSection = sec; curIdx = 0; filteredPhrases = null; document.getElementById("search-input").value = ""; buildTabs(); render(); };
+    el.appendChild(b);
+  });
+}
+
+function handleSearch() {
+  const q = (document.getElementById("search-input").value||"").toLowerCase().trim();
+  if (!q) { filteredPhrases = null; buildTabs(); render(); return; }
+  const results = [];
+  Object.entries(PHRASES).forEach(([sec,phrases]) => {
+    phrases.forEach(p => {
+      if (p.t.includes(q)||p.r.toLowerCase().includes(q)||p.m.toLowerCase().includes(q)||p.ctx.toLowerCase().includes(q))
+        results.push({...p,_sec:sec});
+    });
+  });
+  filteredPhrases = results.length ? results : null;
+  curIdx = 0; buildTabs(); render();
+}
+
+function jumpTo(val) {
+  const phrases = getPhrases(); const n = parseInt(val)-1;
+  if (!isNaN(n) && n>=0 && n<phrases.length) { curIdx = n; render(); }
+}
+
+function setMode(m2) {
+  mode = m2;
+  ["learn","practice","quiz"].forEach(m3 => document.getElementById("mode-"+m3).classList.toggle("active", m3===m2));
+  render();
+}
+
+function render() {
+  const phrases = getPhrases();
+  if (!phrases||!phrases.length) {
+    document.getElementById("tamil-text").textContent = "No results";
+    document.getElementById("roman-text").textContent = "";
+    document.getElementById("meaning-text").textContent = "Try a different search";
+    document.getElementById("context-text").textContent = "";
+    return;
+  }
+  if (curIdx >= phrases.length) curIdx = 0;
+  const p = phrases[curIdx]; hintOn = false;
+  const secLabel = p._sec || curSection;
+  document.getElementById("phrase-loc").textContent = secLabel + " · " + (curIdx+1) + " / " + phrases.length;
+  const db = document.getElementById("diff-badge");
+  db.textContent = DIFF_LABELS[p.d]; db.className = "diff-badge diff-" + p.d;
+  document.getElementById("prog-fill").style.width = Math.round(((curIdx+1)/phrases.length)*100) + "%";
+  document.getElementById("tamil-text").textContent = p.t;
+  if (mode === "quiz") {
+    document.getElementById("roman-text").textContent = "??? — speak to reveal";
+    document.getElementById("meaning-text").textContent = "";
+    document.getElementById("context-text").textContent = "Quiz mode: say the phrase aloud";
+  } else {
+    document.getElementById("roman-text").textContent = p.r;
+    document.getElementById("meaning-text").textContent = p.m;
+    document.getElementById("context-text").textContent = p.ctx;
+  }
+  const syl = document.getElementById("syl-strip"); syl.innerHTML = "";
+  p.s.split("·").forEach(s => { const c = document.createElement("span"); c.className = "syl-chip"; c.textContent = s.trim(); syl.appendChild(c); });
+  syl.classList.add("hidden");
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("heard-row").textContent = "";
+  document.getElementById("mastered-box").className = "mastered-box";
+  document.getElementById("warn-box").className = "warn-box";
+  document.getElementById("no-api-msg").className = "no-api-msg";
+  document.getElementById("btn-next").className = "btn-nav btn-next";
+  buildDots();
+}
+
+function buildDots() {
+  const phrases = getPhrases(); const el = document.getElementById("dots"); el.innerHTML = "";
+  const max = Math.min(phrases.length, 50);
+  for (let i=0; i<max; i++) {
+    const sec = phrases[i]._sec || curSection;
+    const done = (stats.history||{})[sec+"_"+i] >= 1;
+    const d = document.createElement("div");
+    d.className = "dot" + (i===curIdx?" curr":done?" done":"");
+    d.onclick = (j=>()=>{curIdx=j;render();})(i);
+    el.appendChild(d);
+  }
+}
+
+function toggleHint() {
+  hintOn = !hintOn;
+  document.getElementById("syl-strip").classList.toggle("hidden", !hintOn);
+  if (mode === "quiz" && hintOn) {
+    const p = getPhrases()[curIdx];
+    document.getElementById("roman-text").textContent = p.r;
+    document.getElementById("meaning-text").textContent = p.m;
+  }
+}
+
+function doListen(slow) {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const p = getPhrases()[curIdx];
+  const u = new SpeechSynthesisUtterance(p.t);
+  u.lang = "ta-IN"; u.rate = slow ? 0.5 : 0.85;
+  window.speechSynthesis.speak(u);
+}
+
+function toggleMic() { if (listening) { stopListening(); return; } startListening(); }
+
+function startListening() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    const w = document.getElementById("warn-box");
+    w.textContent = "Speech recognition requires Chrome on Android or Chrome desktop. Safari on iPhone doesn't support Tamil mic input. You can still practice manually using the Listen and Hint buttons.";
+    w.classList.add("show"); return;
+  }
+  try {
+    recog = new SR(); recog.lang = "ta-IN"; recog.continuous = false; recog.interimResults = false;
+    recog.onresult = e => handleResult(e.results[0][0].transcript);
+    recog.onerror = e => {
+      const w = document.getElementById("warn-box");
+      if (e.error==="no-speech") w.textContent = "No speech detected — tap Speak and say the phrase clearly.";
+      else if (e.error==="not-allowed") w.textContent = "Microphone access denied. Go to browser Settings > Site Settings > Microphone to allow it.";
+      else w.textContent = "Could not capture audio. Please try again.";
+      w.classList.add("show"); stopListening();
+    };
+    recog.onend = () => stopListening();
+    recog.start(); listening = true;
+    document.getElementById("btn-mic").classList.add("listening");
+    document.getElementById("mic-label").textContent = "Listening...";
+    document.getElementById("feedback").className = "feedback loading show";
+    document.getElementById("feedback").textContent = "Listening... speak now";
+    document.getElementById("heard-row").textContent = "";
+    document.getElementById("warn-box").className = "warn-box";
+  } catch(e) { stopListening(); }
+}
+
+function stopListening() {
+  listening = false;
+  document.getElementById("btn-mic").classList.remove("listening");
+  document.getElementById("mic-label").textContent = "Speak";
+  if (recog) { try { recog.stop(); } catch(e) {} }
+}
+
+async function handleResult(transcript) {
+  const p = getPhrases()[curIdx];
+  document.getElementById("heard-row").textContent = 'I heard: "' + transcript + '"';
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback loading show"; fb.textContent = "Checking your pronunciation...";
+  if (!apiKey) {
+    fb.className = "feedback"; fb.textContent = "";
+    document.getElementById("no-api-msg").className = "no-api-msg show";
+    document.getElementById("btn-next").className = "btn-nav btn-next show";
+    recordAttempt(p, false); return;
+  }
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+      body: JSON.stringify({
+        model:"claude-haiku-4-5-20251001", max_tokens:200,
+        system:"You are a warm encouraging Tamil pronunciation coach. 2-3 sentences max. Simple English only. Never use Tamil script.",
+        messages:[{role:"user",content:`Tamil learner practicing.
+Expected: "${p.t}" (romanized: "${p.r}", meaning: "${p.m}", syllables: ${p.s})
+Speech recognizer heard: "${transcript}"
+Mode: ${mode}
+Was it correct? If yes: praise + 1 native tip. If no: name the off syllable + correction.
+Start reply with exactly "✅" if correct, "❌" if needs improvement.`}]
+      })
+    });
+    const data = await res.json();
+    const msg = (data.content&&data.content[0]) ? data.content[0].text : "Unable to evaluate. Try again.";
+    const correct = msg.startsWith("✅");
+    fb.className = "feedback show " + (correct ? "ok" : "bad"); fb.textContent = msg;
+    recordAttempt(p, correct);
+    if (correct) {
+      document.getElementById("btn-next").className = "btn-nav btn-next show";
+      if (mode==="quiz") { document.getElementById("roman-text").textContent=p.r; document.getElementById("meaning-text").textContent=p.m; }
+    }
+  } catch(e) {
+    fb.className = "feedback bad show";
+    fb.textContent = "Connection error. Check your internet or API key and try again.";
+  }
+}
+
+function recordAttempt(p, correct) {
+  stats.total = (stats.total||0)+1;
+  const sec = p._sec || curSection;
+  const key = sec + "_" + curIdx;
+  stats.history = stats.history||{}; stats.history[key] = (stats.history[key]||0)+1;
+  if (correct) {
+    stats.correct = (stats.correct||0)+1;
+    stats.mastered = stats.mastered||{}; stats.mastered[key] = (stats.mastered[key]||0)+1;
+    if (stats.mastered[key]===3) document.getElementById("mastered-box").className = "mastered-box show";
+  }
+  updateStreak(); refreshStats(); buildDots(); saveStats();
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (stats.lastDate === today) return;
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  stats.streak = stats.lastDate===yesterday ? (stats.streak||0)+1 : 1;
+  stats.lastDate = today;
+}
+
+function goPrev() { if (curIdx>0) { curIdx--; render(); } }
+function goNext() {
+  const phrases = getPhrases();
+  if (curIdx < phrases.length-1) { curIdx++; render(); }
+  else {
+    document.getElementById("feedback").className = "feedback ok show";
+    document.getElementById("feedback").textContent = "🎉 Section complete! " + phrases.length + " phrases done. Pick another topic or keep practicing.";
+    document.getElementById("btn-next").className = "btn-nav btn-next";
+    document.getElementById("prog-fill").style.width = "100%";
+  }
+}
+
+loadApiKey(); loadStats(); buildTabs(); render();
+</script>
+</body>
+</html>
